@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+#include "mainwindow.h"
 #include <QImage>
 #include <QDebug>
 #include <QCameraDevice>
@@ -30,47 +30,50 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::loadCascade() {
-    // Load the Haar Cascade classifier
-    if (!faceCascade.load("E:/dev/opencvsource/opencv-4.10.0/data/haarcascades/haarcascade_frontalface_default.xml")) { // Make sure to provide the correct path
-        qDebug() << "Error loading face cascade classifier.";
+    // For macOS, assuming OpenCV is installed via Homebrew
+    const QString cascadePath = "/opt/homebrew/Cellar/opencv/4.10.0_12/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
+
+    if (!faceCascade.load(cascadePath.toStdString())) {
+        qDebug() << "Error loading face cascade classifier from:" << cascadePath;
         return;
     }
 }
 
 void MainWindow::createUI() {
-    // Creating the containers
+    // Create central widget
     QWidget *centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
 
-    // Main container
+    // Create main layout for central widget
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-    mainLayout->setAlignment(Qt::AlignCenter);
 
-    // Title creation and styling
-    QWidget *headerWidget = new QWidget(this); // Title container
+    // Header widget
+    QWidget *headerWidget = new QWidget;
     headerWidget->setStyleSheet("background-color: #2E86C1; padding: 10px; border-radius: 3px;");
+    QVBoxLayout *headerLayout = new QVBoxLayout(headerWidget);
 
-    QVBoxLayout *headerLayout = new QVBoxLayout(headerWidget); // Title space
-
-    QLabel *titleLabel = new QLabel("Camera Viewer", this);
+    // Title label
+    QLabel *titleLabel = new QLabel("Camera Viewer");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold;");
+    headerLayout->addWidget(titleLabel);
 
-    headerLayout->addWidget(titleLabel); // Adding the title space to the container
-    mainLayout->addWidget(headerWidget); // Adding the title container to the main container
+    // Add header to main layout
+    mainLayout->addWidget(headerWidget);
 
-    // Add a spacer to push other content down
-    QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
-    mainLayout->addItem(topSpacer);
+    // Add spacing
+    mainLayout->addSpacing(20);
 
-    // Cameras space
-    gridLayout = new QGridLayout(centralWidget);
+    // Create grid layout for cameras
+    QWidget *camerasWidget = new QWidget;
+    gridLayout = new QGridLayout(camerasWidget);
     gridLayout->setAlignment(Qt::AlignCenter);
-    mainLayout->addLayout(gridLayout);
+    mainLayout->addWidget(camerasWidget);
 
-    QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->addItem(bottomSpacer);
+    // Add bottom spacing
+    mainLayout->addSpacing(20);
 
-    setCentralWidget(centralWidget);
+    // Set window properties
     setMinimumSize(800, 600);
     setMaximumSize(1000, 800);
 }
