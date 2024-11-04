@@ -31,6 +31,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::loadCascade() {
     // For macOS, assuming OpenCV is installed via Homebrew
+    // Change the path to the cascade classifier file based on your system
     const QString cascadePath = "/opt/homebrew/Cellar/opencv/4.10.0_12/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
 
     if (!faceCascade.load(cascadePath.toStdString())) {

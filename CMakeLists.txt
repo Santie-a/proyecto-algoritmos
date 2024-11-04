@@ -11,6 +11,7 @@ set(CMAKE_MACOSX_BUNDLE TRUE)
 set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.yourcompany.algoritmos")
 set(MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist)
 
+
 # Find Qt6 components
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Multimedia MultimediaWidgets Widgets)
 
