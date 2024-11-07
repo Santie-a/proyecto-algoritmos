@@ -93,26 +93,17 @@ void MainWindow::setCameras() {
             break;
         }
 
+        // Create a QLabel to siplay the name
+        QLabel *cameraNameLabel = new QLabel(this);
+        cameraNameLabels.append(cameraNameLabel);
+        gridLayout->addWidget(cameraNameLabel, row, col);
+
         // Create a QLabel to display the camera feed
         QLabel *cameraLabel = new QLabel(this);
         cameraLabel->setMinimumSize(minWidth, minHeight);
         cameraLabel->setAlignment(Qt::AlignCenter);
         cameraLabels.append(cameraLabel);
-        gridLayout->addWidget(cameraLabel, row, col);
-
-        // Create a QLabel for displaying FPS
-        QLabel *fpsLabel = new QLabel(this);
-        fpsLabel->setAlignment(Qt::AlignCenter);
-        fpsLabel->setStyleSheet("font-weight: bold;");
-        fpsLabels.append(fpsLabel);
-        gridLayout->addWidget(fpsLabel, row + 1, col);
-
-        // Create a QLabel for displaying detected objects
-        QLabel *objectsLabel = new QLabel(this);
-        objectsLabel->setAlignment(Qt::AlignCenter);
-        objectsLabel->setStyleSheet("font-weight: bold;");
-        objectsLabels.append(objectsLabel);
-        gridLayout->addWidget(objectsLabel, row + 2, col);
+        gridLayout->addWidget(cameraLabel, row + 1, col);
 
         // Store the VideoCapture object
         cameras.append(std::move(cap));
@@ -128,45 +119,50 @@ void MainWindow::setCameras() {
     }
 }
 
-void MainWindow::updateFrames() {
-    static QVector<QElapsedTimer> timers(cameras.size()); // Store timers for each camera
+void MainWindow::displayAlert(bool val, int index) {
+    if (val) {
+        cameraNameLabels[index]->setStyleSheet("background-color: yellow; font-weight: bold; font-size: 30px; padding: 5px;");
+    } else {
+        cameraNameLabels[index]->setStyleSheet("background-color: transparent; font-weight: bold; font-size: 30px; padding: 5px;");
+    }
+}
 
+void MainWindow::updateFrames() {
     for (int i = 0; i < cameras.size(); ++i) {
         cv::Mat frame;
         if (cameras[i].read(frame) && !frame.empty()) {
+
             // Convert the frame from BGR to RGB
             cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
 
+
             // Face detection
             std::vector<cv::Rect> faces;
-            faceCascade.detectMultiScale(frame, faces, 1.1, 3, 0, cv::Size(30, 30));
+            faceCascade.detectMultiScale(frame, faces, 1.1, 3, 0, cv::Size(75, 75));
+
 
             // Draw rectangles around detected faces
             for (const auto& face : faces) {
                 cv::rectangle(frame, face, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
+                qDebug() << "x: " << face.x << " y: " << face.y;
             }
 
+
+            // Alert
+            displayAlert(faces.size() > 0, i);
+
             // Convert cv::Mat to QImage
-            QImage image(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+            QImage image(
+                frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+
+
+            // Display the camera name
+            cameraNameLabels[i]->setText(QString("CAM%1").arg(i));
+
 
             // Set the image to the QLabel
             cameraLabels[i]->setPixmap(QPixmap::fromImage(image).scaled(
                 cameraLabels[i]->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-            // Display the detected objects
-            objectsLabels[i]->setText(QString("Detected Objects: %1").arg(faces.size()));
-
-            // Calculate and update FPS
-            if (!timers[i].isValid()) {
-                timers[i].start(); // Start the timer on first frame
-            } else {
-                double elapsed = timers[i].elapsed(); // Elapsed time in milliseconds
-                if (elapsed > 0) {
-                    double fps = 1000.0 / elapsed; // Calculate FPS
-                    fpsLabels[i]->setText(QString("FPS: %1").arg(fps, 0, 'f', 2)); // Update FPS label
-                }
-                timers[i].restart(); // Restart the timer for the next frame
-            }
         }
     }
 }
