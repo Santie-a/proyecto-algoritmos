@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+
 #include <QImage>
 #include <QDebug>
 #include <QCameraDevice>
@@ -11,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     createUI();
 
     loadCascade();
+
+    detectedObjects objects;
 
     setCameras();
 
@@ -138,13 +141,16 @@ void MainWindow::updateFrames() {
 
             // Face detection
             std::vector<cv::Rect> faces;
-            faceCascade.detectMultiScale(frame, faces, 1.1, 3, 0, cv::Size(75, 75));
+            faceCascade.detectMultiScale(frame, faces, 1.1, 3, 0, cv::Size(125, 125));
 
 
             // Draw rectangles around detected faces
             for (const auto& face : faces) {
                 cv::rectangle(frame, face, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
-                qDebug() << "x: " << face.x << " y: " << face.y;
+
+                std::pair<int, int> position = {face.x, face.y};
+
+                objects.updateObjects(i, position);
             }
 
 

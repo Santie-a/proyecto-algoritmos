@@ -2,10 +2,15 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindow.h"
+#include "detectedobjects.h"
+
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QLabel>
 #include <QTimer>
+#include <QQueue>
+#include <QHash>
+
 #include <opencv2/opencv.hpp>
 
 class MainWindow : public QMainWindow {
@@ -31,7 +36,8 @@ private:
     QWidget *centralWidget;
     QWidget *headerWidget;
 
-    // Vectors to store the objects
+    // class instance to store the objects
+    detectedObjects objects;
 
     // *Camera
     QVector<cv::VideoCapture> cameras;
@@ -47,8 +53,6 @@ private:
     QSpacerItem *topSpacer;
     QSpacerItem *bottomSpacer;
     QTimer *timer;
-
-
 
     // OpenCV
     cv::CascadeClassifier faceCascade;
