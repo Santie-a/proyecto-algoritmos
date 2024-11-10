@@ -6,6 +6,12 @@
 #include <QMediaDevices>
 #include <QElapsedTimer>
 
+/**
+ * Constructor for MainWindow.
+ * Initializes the main window with a size of 800x600.
+ * Calls the setup functions for the UI, cascade, camera, and timer.
+ * @param parent The parent QWidget for this window.
+ */
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     resize(800, 600);
 
@@ -23,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     timer->start(30);  // Update every 30 ms (~33 FPS)
 }
 
+/**
+ * Destructor for MainWindow.
+ * Releases all camera resources when the window is closed.
+ */
 MainWindow::~MainWindow() {
     // Release all camera resources
     for (auto &camera : cameras) {
@@ -32,6 +42,10 @@ MainWindow::~MainWindow() {
     }
 }
 
+/**
+ * Loads the Haar Cascade classifier for face detection from the provided path.
+ * If the load fails, prints an error message to the console.
+ */
 void MainWindow::loadCascade() {
     // Load the Haar Cascade classifier
     if (!faceCascade.load("E:/dev/opencvsource/opencv-4.10.0/data/haarcascades/haarcascade_frontalface_default.xml")) { // Make sure to provide the correct path
@@ -40,6 +54,11 @@ void MainWindow::loadCascade() {
     }
 }
 
+/**
+ * Creates the user interface for the application.
+ *
+ * This function creates the main window, header and title, grid layout for the cameras, and spacers for the layout.
+ */
 void MainWindow::createUI() {
     // Creating the containers
     QWidget *centralWidget = new QWidget(this);
@@ -78,6 +97,17 @@ void MainWindow::createUI() {
     setMaximumSize(1000, 800);
 }
 
+/**
+ * Initializes the available cameras, adding camera feeds to the grid layout.
+ * 
+ * This function detects all available video input devices and sets up a
+ * grid layout to display each camera's feed and name. Each camera feed
+ * is displayed in a QLabel with a minimum size of 320x240 pixels. The
+ * function appends the camera's VideoCapture object and QLabel to
+ * their respective lists for further processing.
+ * 
+ * If a camera is not available, it logs a message and stops processing.
+ */
 void MainWindow::setCameras() {
     const QList<QCameraDevice> detectedCameras = QMediaDevices::videoInputs();
 
@@ -122,6 +152,14 @@ void MainWindow::setCameras() {
     }
 }
 
+/**
+ * Sets the style of the camera name label at a specified index.
+ * If the alert is true, the label's background color is set to yellow.
+ * Otherwise, the label's background color is set to transparent.
+ *
+ * @param val A boolean indicating if an alert condition is met.
+ * @param index The index of the camera label to be updated.
+ */
 void MainWindow::displayAlert(bool val, int index) {
     if (val) {
         cameraNameLabels[index]->setStyleSheet("background-color: yellow; font-weight: bold; font-size: 30px; padding: 5px;");
@@ -130,6 +168,16 @@ void MainWindow::displayAlert(bool val, int index) {
     }
 }
 
+/**
+ * Updates the frames for each camera, performing face detection and alert checks.
+ * 
+ * This function iterates over all available cameras, reads frames, and processes them for face detection.
+ * Detected faces are marked with red rectangles. The function checks for alert conditions based on the
+ * detected object positions and updates the camera label styles accordingly. It converts the processed
+ * frames from cv::Mat to QImage format and displays them on the respective QLabel widgets.
+ * 
+ * Additionally, it removes objects from the detected objects container that have not been updated recently.
+ */
 void MainWindow::updateFrames() {
     for (int i = 0; i < cameras.size(); ++i) {
         bool isAlert = false;
