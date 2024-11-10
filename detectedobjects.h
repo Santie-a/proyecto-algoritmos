@@ -14,13 +14,14 @@ private:
     {
         QQueue<std::pair<int, int>> *positions;
         QTime startingTime;
+        QTime lastInsertionTime;
 
         // Default constructor
-        detected() : positions(new QQueue<std::pair<int, int>>), startingTime(QTime::currentTime()) {}
+        detected() : positions(new QQueue<std::pair<int, int>>), startingTime(QTime::currentTime()), lastInsertionTime(QTime::currentTime()) {}
 
         // Constructor with initial position
         detected(std::pair<int, int> &initialPosition)
-            : positions(new QQueue<std::pair<int, int>>), startingTime(QTime::currentTime()) {
+            : positions(new QQueue<std::pair<int, int>>), startingTime(QTime::currentTime()), lastInsertionTime(QTime::currentTime()) {
             positions->enqueue(initialPosition);
         }
     };
@@ -30,16 +31,19 @@ private:
     // Hash for tracking the objects (main container)
     QHash<QString, detected> detectedContainer;
 
-    // Private functions
+    // Private main functions
     void addObject(QString &id, std::pair<int, int> &initialPosition);
     QString retriveKey(int index, std::pair<int, int> &position);
 
+    // Private helper functions
     bool isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2);
 
 public:
     detectedObjects();
 
-    void updateObjects(int index, std::pair<int, int> &position);
+    QString updateObject(int index, std::pair<int, int> &position);
+    void removePastObjects();
+    bool checkAlert(QString &id);
 };
 
 #endif // DETECTEDOBJECTS_H

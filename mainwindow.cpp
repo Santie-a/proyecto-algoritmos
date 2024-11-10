@@ -132,6 +132,7 @@ void MainWindow::displayAlert(bool val, int index) {
 
 void MainWindow::updateFrames() {
     for (int i = 0; i < cameras.size(); ++i) {
+        bool isAlert = false;
         cv::Mat frame;
         if (cameras[i].read(frame) && !frame.empty()) {
 
@@ -150,12 +151,13 @@ void MainWindow::updateFrames() {
 
                 std::pair<int, int> position = {face.x, face.y};
 
-                objects.updateObjects(i, position);
+                QString currentId = objects.updateObject(i, position);
+                isAlert = objects.checkAlert(currentId);
             }
 
 
             // Alert
-            displayAlert(faces.size() > 0, i);
+            displayAlert(isAlert, i);
 
             // Convert cv::Mat to QImage
             QImage image(
@@ -171,4 +173,5 @@ void MainWindow::updateFrames() {
                 cameraLabels[i]->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     }
+    objects.removePastObjects();
 }
