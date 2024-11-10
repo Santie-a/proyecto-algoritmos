@@ -38,6 +38,7 @@ private:
 
     // class instance to store the objects
     detectedObjects objects;
+    int alertLevel;
 
     // *Camera
     QVector<cv::VideoCapture> cameras;
@@ -61,6 +62,6 @@ private:
     void createUI();
     void setCameras();
     void loadCascade();
-    void displayAlert(bool val, int index);
+    void displayAlert(int val, int index);
 };
 #endif // MAINWINDOW_H

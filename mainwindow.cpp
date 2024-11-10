@@ -4,7 +4,6 @@
 #include <QDebug>
 #include <QCameraDevice>
 #include <QMediaDevices>
-#include <QElapsedTimer>
 
 /**
  * Constructor for MainWindow.
@@ -13,7 +12,7 @@
  * @param parent The parent QWidget for this window.
  */
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    resize(800, 600);
+    resize(1000, 800);
 
     createUI();
 
@@ -93,8 +92,8 @@ void MainWindow::createUI() {
     mainLayout->addItem(bottomSpacer);
 
     setCentralWidget(centralWidget);
-    setMinimumSize(800, 600);
-    setMaximumSize(1000, 800);
+    setMinimumSize(1000, 800);
+    setMaximumSize(1200, 1000);
 }
 
 /**
@@ -152,19 +151,24 @@ void MainWindow::setCameras() {
     }
 }
 
+
 /**
- * Sets the style of the camera name label at a specified index.
- * If the alert is true, the label's background color is set to yellow.
- * Otherwise, the label's background color is set to transparent.
+ * Updates the label style of the camera at the given index to display the alert status.
  *
- * @param val A boolean indicating if an alert condition is met.
- * @param index The index of the camera label to be updated.
+ * @param val The alert level (0 for no alert, 1 for yellow, 2 for red)
+ * @param index The index of the camera in the `cameraLabels` list
  */
-void MainWindow::displayAlert(bool val, int index) {
-    if (val) {
+void MainWindow::displayAlert(int val, int index) {
+    switch (val) {
+    case 1:
         cameraNameLabels[index]->setStyleSheet("background-color: yellow; font-weight: bold; font-size: 30px; padding: 5px;");
-    } else {
+        break;
+    case 2:
+        cameraNameLabels[index]->setStyleSheet("background-color: red; font-weight: bold; font-size: 30px; padding: 5px;");
+        break;
+    default:
         cameraNameLabels[index]->setStyleSheet("background-color: transparent; font-weight: bold; font-size: 30px; padding: 5px;");
+        break;
     }
 }
 
@@ -180,7 +184,7 @@ void MainWindow::displayAlert(bool val, int index) {
  */
 void MainWindow::updateFrames() {
     for (int i = 0; i < cameras.size(); ++i) {
-        bool isAlert = false;
+        int alertLevel = 0;
         cv::Mat frame;
         if (cameras[i].read(frame) && !frame.empty()) {
 
@@ -193,19 +197,24 @@ void MainWindow::updateFrames() {
             faceCascade.detectMultiScale(frame, faces, 1.1, 3, 0, cv::Size(125, 125));
 
 
-            // Draw rectangles around detected faces
-            for (const auto& face : faces) {
-                cv::rectangle(frame, face, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
+            // Draw rectangles around detected objects, and manage logic of detected objects
+            if (faces.empty()) {
+                alertLevel = 0;
+            } else {
+                for (const auto& face : faces) {
+                    cv::rectangle(frame, face, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
 
-                std::pair<int, int> position = {face.x, face.y};
+                    std::pair<int, int> position = {face.x, face.y};
 
-                QString currentId = objects.updateObject(i, position);
-                isAlert = objects.checkAlert(currentId);
+                    QString currentId = objects.updateObject(i, position);
+
+                    alertLevel = (objects.checkAlert(currentId)) ? 2 : 1;
+                }
             }
 
 
             // Alert
-            displayAlert(isAlert, i);
+            displayAlert(alertLevel, i);
 
             // Convert cv::Mat to QImage
             QImage image(

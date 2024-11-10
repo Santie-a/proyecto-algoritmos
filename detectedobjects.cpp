@@ -151,6 +151,8 @@ void detectedObjects::removePastObjects() {
                 qDebug() << "Deleting" << key << "because it past 5 seconds since last insertion...";
 
                 detectedContainer.remove(key);
+
+                qDebug() << "Container size after deletion:" << detectedContainer.size();
             }
         }
     }
