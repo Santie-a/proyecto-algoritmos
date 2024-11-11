@@ -28,13 +28,17 @@ private:
     Ui::MainWindow ui;
 
     // *Layouts
-    QVBoxLayout *mainLayout;
+    QHBoxLayout *mainLayout;
+    QVBoxLayout *sidebarLayout;
+    QVBoxLayout *contentLayout;
     QVBoxLayout *headerLayout;
     QGridLayout *gridLayout;
 
     // *Widgets
+    QWidget *mainWidget;
     QWidget *centralWidget;
     QWidget *headerWidget;
+    QWidget *sidebarWidget;
 
     // class instance to store the objects
     detectedObjects objects;

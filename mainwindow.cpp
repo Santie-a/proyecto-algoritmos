@@ -7,7 +7,7 @@
 
 /**
  * Constructor for MainWindow.
- * Initializes the main window with a size of 800x600.
+ * Initializes the main window with a size of 1000x800.
  * Calls the setup functions for the UI, cascade, camera, and timer.
  * @param parent The parent QWidget for this window.
  */
@@ -60,15 +60,34 @@ void MainWindow::loadCascade() {
  */
 void MainWindow::createUI() {
     // Creating the containers
-    QWidget *centralWidget = new QWidget(this);
 
-    // Main container
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-    mainLayout->setAlignment(Qt::AlignCenter);
+    // Central container
+    QWidget *centralWidget = new QWidget(this);
+    QHBoxLayout *centralLayout = new QHBoxLayout(centralWidget);
+
+    // Sidebar space
+    QWidget *sidebarWidget = new QWidget(this);
+    sidebarWidget->setMinimumWidth(100);
+    sidebarWidget->setMinimumHeight(200);
+    sidebarWidget->setStyleSheet("background-color: #2E86C1; padding: 3px; margin: 5px; border-radius: 3px;");
+    QVBoxLayout *sidebarLayout = new QVBoxLayout(sidebarWidget);
+
+    // Menu title
+    QLabel *menuLabel = new QLabel("Menu", this);
+    menuLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold; padding: 5px");
+    sidebarLayout->addWidget(menuLabel); // Adding the title space to the container
+
+    QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
+    sidebarLayout->addItem(topSpacer);
+
+    // Content container
+    QVBoxLayout *contentLayout = new QVBoxLayout();
+    contentLayout->setAlignment(Qt::AlignCenter);
+    centralLayout->addLayout(contentLayout);
 
     // Title creation and styling
     QWidget *headerWidget = new QWidget(this); // Title container
-    headerWidget->setStyleSheet("background-color: #2E86C1; padding: 10px; border-radius: 3px;");
+    headerWidget->setStyleSheet("background-color: #2E86C1; padding: 10px; margin: 5px; border-radius: 3px;");
 
     QVBoxLayout *headerLayout = new QVBoxLayout(headerWidget); // Title space
 
@@ -77,19 +96,18 @@ void MainWindow::createUI() {
     titleLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold;");
 
     headerLayout->addWidget(titleLabel); // Adding the title space to the container
-    mainLayout->addWidget(headerWidget); // Adding the title container to the main container
+    contentLayout->addWidget(headerWidget); // Adding the title container to the main container
 
     // Add a spacer to push other content down
-    QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
-    mainLayout->addItem(topSpacer);
+    contentLayout->addItem(topSpacer);
 
     // Cameras space
     gridLayout = new QGridLayout(centralWidget);
     gridLayout->setAlignment(Qt::AlignCenter);
-    mainLayout->addLayout(gridLayout);
+    contentLayout->addLayout(gridLayout);
 
     QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->addItem(bottomSpacer);
+    contentLayout->addItem(bottomSpacer);
 
     setCentralWidget(centralWidget);
     setMinimumSize(1000, 800);

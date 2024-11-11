@@ -52,16 +52,17 @@ bool detectedObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2
 /**
  * Retrieves a key from the hash based on the provided index and position.
  * If an existing object is found that is within the tolerance range, its key is returned.
- * Otherwise, a new key is generated in the format "CAM<index>-<position.first>-<position.second>" and returned.
+ * Otherwise, a new key is generated in the format "CAM<index>-<hour>-<minute>-<second>" and returned.
  * @param index The index of the camera.
  * @param position The position of the object as a pair of coordinates (x, y).
  * @return The key for the object.
  */
 QString detectedObjects::retriveKey(int index, std::pair<int, int> &position) {
     QString id;
+    QTime currentTime = QTime::currentTime();
 
     if (detectedContainer.isEmpty()) {
-        id = QString("CAM%1-%2-%3").arg(index).arg(position.first).arg(position.second);
+        id = QString("CAM%1-%2-%3-%4").arg(index).arg(currentTime.hour()).arg(currentTime.minute()).arg(currentTime.second());
     } else {
         const auto keys = detectedContainer.keys();
         for (const QString &key : keys) {
@@ -79,7 +80,7 @@ QString detectedObjects::retriveKey(int index, std::pair<int, int> &position) {
     }
 
     if (id == "") {
-        id = QString("CAM%1-%2-%3").arg(index).arg(position.first).arg(position.second);
+        id = QString("CAM%1-%2-%3-%4").arg(index).arg(currentTime.hour()).arg(currentTime.minute()).arg(currentTime.second());
     }
 
     return id;
@@ -102,7 +103,7 @@ QString detectedObjects::updateObject(int index, std::pair<int, int> &position) 
             addObject(id, position);
         } else {
             detected &det = detectedContainer[id];
-            if (det.positions) {
+            if (det.positions && (det.startingTime.secsTo(currentTime) > 1)) {
                 det.positions->enqueue(position);
                 det.lastInsertionTime = currentTime;
             }
