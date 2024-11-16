@@ -66,32 +66,29 @@ void MainWindow::createUI() {
     QHBoxLayout *centralLayout = new QHBoxLayout(centralWidget);
 
     // Sidebar space
-    QWidget *sidebarWidget = new QWidget(this);
-    sidebarWidget->setMinimumWidth(100);
-    sidebarWidget->setMinimumHeight(200);
+    sidebarWidget = new QWidget(this);
+    sidebarWidget->setMinimumWidth(150);
+    sidebarWidget->setMinimumHeight(400);
     sidebarWidget->setStyleSheet("background-color: #2E86C1; padding: 3px; margin: 5px; border-radius: 3px;");
-    QVBoxLayout *sidebarLayout = new QVBoxLayout(sidebarWidget);
+    sidebarLayout = new QVBoxLayout(sidebarWidget);
 
-    // Menu title
+    // *Menu title
     QLabel *menuLabel = new QLabel("Menu", this);
     menuLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold; padding: 5px");
     sidebarLayout->addWidget(menuLabel); // Adding the title space to the container
 
-    QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
-    sidebarLayout->addItem(topSpacer);
-
     // Content container
-    QVBoxLayout *contentLayout = new QVBoxLayout();
+    contentLayout = new QVBoxLayout();
     contentLayout->setAlignment(Qt::AlignCenter);
     centralLayout->addLayout(contentLayout);
 
     // Title creation and styling
-    QWidget *headerWidget = new QWidget(this); // Title container
+    headerWidget = new QWidget(this); // Title container
     headerWidget->setStyleSheet("background-color: #2E86C1; padding: 10px; margin: 5px; border-radius: 3px;");
 
-    QVBoxLayout *headerLayout = new QVBoxLayout(headerWidget); // Title space
+    headerLayout = new QVBoxLayout(headerWidget); // Title space
 
-    QLabel *titleLabel = new QLabel("Camera Viewer", this);
+    titleLabel = new QLabel("Camera Viewer", this);
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold;");
 
@@ -99,6 +96,7 @@ void MainWindow::createUI() {
     contentLayout->addWidget(headerWidget); // Adding the title container to the main container
 
     // Add a spacer to push other content down
+    topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
     contentLayout->addItem(topSpacer);
 
     // Cameras space
@@ -106,7 +104,7 @@ void MainWindow::createUI() {
     gridLayout->setAlignment(Qt::AlignCenter);
     contentLayout->addLayout(gridLayout);
 
-    QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
     contentLayout->addItem(bottomSpacer);
 
     setCentralWidget(centralWidget);
@@ -143,10 +141,16 @@ void MainWindow::setCameras() {
             break;
         }
 
-        // Create a QLabel to siplay the name
+        // Create a QLabel to siplay the name in the grid
         QLabel *cameraNameLabel = new QLabel(this);
         cameraNameLabels.append(cameraNameLabel);
         gridLayout->addWidget(cameraNameLabel, row, col);
+
+        // Create a QLabel to siplay the name in the sidebar
+        QLabel *sidebarCameraNameLabel = new QLabel(this);
+        sidebarCameraNameLabel->setText(QString("CAMERA %1").arg(i));
+        sidebarCameraNameLabel->setStyleSheet("background-color: transparent; font-weight: bold; font-size: 15px; padding: 5px;");
+        sidebarLayout->addWidget(sidebarCameraNameLabel);
 
         // Create a QLabel to display the camera feed
         QLabel *cameraLabel = new QLabel(this);
@@ -154,6 +158,13 @@ void MainWindow::setCameras() {
         cameraLabel->setAlignment(Qt::AlignCenter);
         cameraLabels.append(cameraLabel);
         gridLayout->addWidget(cameraLabel, row + 1, col);
+
+        // Create a QComboBox for the camera options
+        QComboBox *cameraOption = new QComboBox(sidebarWidget);
+        cameraOption->addItem("Default detection");
+        cameraOption->addItem("Detection disabled");
+        cameraOption->addItem("Alert On detection");
+        sidebarLayout->addWidget(cameraOption);
 
         // Store the VideoCapture object
         cameras.append(std::move(cap));

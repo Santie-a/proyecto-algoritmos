@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QQueue>
 #include <QHash>
+#include <QComboBox>
 
 #include <opencv2/opencv.hpp>
 
@@ -28,7 +29,6 @@ private:
     Ui::MainWindow ui;
 
     // *Layouts
-    QHBoxLayout *mainLayout;
     QVBoxLayout *sidebarLayout;
     QVBoxLayout *contentLayout;
     QVBoxLayout *headerLayout;
@@ -53,6 +53,7 @@ private:
     // **For the cameras
     QVector<QLabel*> cameraLabels;
     QVector<QLabel*> cameraNameLabels;
+    QVector<QComboBox *> camerasOptions;
 
     // Extra
     QSpacerItem *topSpacer;
