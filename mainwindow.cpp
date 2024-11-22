@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     createUI();
 
-    loadCascade();
+    loadCascade(true);
 
     detectedObjects objects;
 
@@ -45,11 +45,17 @@ MainWindow::~MainWindow() {
  * Loads the Haar Cascade classifier for face detection from the provided path.
  * If the load fails, prints an error message to the console.
  */
-void MainWindow::loadCascade() {
+void MainWindow::loadCascade(bool pedestrian) {
     // Load the Haar Cascade classifier
-    if (!faceCascade.load("E:/dev/opencvsource/opencv-4.10.0/data/haarcascades/haarcascade_frontalface_default.xml")) { // Make sure to provide the correct path
-        qDebug() << "Error loading face cascade classifier.";
-        return;
+    if (pedestrian) {
+        pedestrianHOG.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
+        usingHog = true;
+    }
+    else {
+        if (!faceCascade.load("../../cascades/haarcascade_frontalface_default.xml")) { // Make sure to provide the correct path
+            qDebug() << "Error loading face cascade classifier.";
+            return;
+        }
     }
 }
 
@@ -221,19 +227,23 @@ void MainWindow::updateFrames() {
             cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
 
 
-            // Face detection
-            std::vector<cv::Rect> faces;
-            faceCascade.detectMultiScale(frame, faces, 1.1, 3, 0, cv::Size(125, 125));
+            // Object detection
+            std::vector<cv::Rect> detections;
+            if (usingHog) {
+                pedestrianHOG.detectMultiScale(frame, detections);
+            } else {
+                faceCascade.detectMultiScale(frame, detections, 1.1, 3, 0, cv::Size(125, 125));
+            }
 
 
             // Draw rectangles around detected objects, and manage logic of detected objects
-            if (faces.empty()) {
+            if (detections.empty()) {
                 alertLevel = 0;
             } else {
-                for (const auto& face : faces) {
-                    cv::rectangle(frame, face, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
+                for (const auto& detected : detections) {
+                    cv::rectangle(frame, detected, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
 
-                    std::pair<int, int> position = {face.x, face.y};
+                    std::pair<int, int> position = {detected.x, detected.y};
 
                     QString currentId = objects.updateObject(i, position);
 

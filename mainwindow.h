@@ -62,11 +62,13 @@ private:
 
     // OpenCV
     cv::CascadeClassifier faceCascade;
+    cv::HOGDescriptor pedestrianHOG;
+    bool usingHog = false;
 
     // Funciones organizadoras
     void createUI();
     void setCameras();
-    void loadCascade();
+    void loadCascade(bool pedestrian);
     void displayAlert(int val, int index);
 };
 #endif // MAINWINDOW_H
