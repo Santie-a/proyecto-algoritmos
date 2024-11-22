@@ -1,13 +1,12 @@
-#include "detectedobjects.h"
+#include "indetectionobjects.h"
 
 /**
  * Constructor for detectedObjects.
  * Initializes the detectedObjects class by printing a
  * debugging message and the initial size of the detectedContainer.
  */
-detectedObjects::detectedObjects() {
+inDetectionObjects::inDetectionObjects() {
     qDebug() << "Initializing detectedObjects...";
-    qDebug() << "Initial size of detectedContainer:" << detectedContainer.size();
 }
 
 /**
@@ -18,7 +17,7 @@ detectedObjects::detectedObjects() {
  * This is used to initialize the head of the object's
  * position queue.
  */
-void detectedObjects::addObject(QString &id, std::pair<int, int> &initialPosition) {
+void inDetectionObjects::addObject(QString &id, std::pair<int, int> &initialPosition) {
     qDebug() << "Trying to add object to hash...";
     detectedContainer.insert(id, detected(initialPosition));
 
@@ -36,7 +35,7 @@ void detectedObjects::addObject(QString &id, std::pair<int, int> &initialPositio
  * @return True if the positions are within the tolerance range, false otherwise.
  */
 
-bool detectedObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2) {
+bool inDetectionObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2) {
     if (
         (p1.first <= p2.first + tolerance) &&
         (p1.first >= p2.first - tolerance) &&
@@ -57,9 +56,8 @@ bool detectedObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2
  * @param position The position of the object as a pair of coordinates (x, y).
  * @return The key for the object.
  */
-QString detectedObjects::retriveKey(int index, std::pair<int, int> &position) {
+QString inDetectionObjects::retriveKey(int index, std::pair<int, int> &position, QTime &currentTime) {
     QString id;
-    QTime currentTime = QTime::currentTime();
 
     if (detectedContainer.isEmpty()) {
         id = QString("CAM%1-%2-%3-%4").arg(index).arg(currentTime.hour()).arg(currentTime.minute()).arg(currentTime.second());
@@ -92,9 +90,8 @@ QString detectedObjects::retriveKey(int index, std::pair<int, int> &position) {
  * @param position The new position of the object as a pair of coordinates (x, y).
  * @return The key for the object.
  */
-QString detectedObjects::updateObject(int index, std::pair<int, int> &position) {
-    QString id = retriveKey(index, position);
-    QTime currentTime = QTime::currentTime();
+QString inDetectionObjects::updateObject(int index, std::pair<int, int> &position, QTime &currentTime) {
+    QString id = retriveKey(index, position, currentTime);
 
     if (detectedContainer.isEmpty()) {
         addObject(id, position);
@@ -121,7 +118,7 @@ QString detectedObjects::updateObject(int index, std::pair<int, int> &position) 
  * @param id The identifier of the object in the detectedContainer.
  * @return True if the alert condition is met, false otherwise.
  */
-bool detectedObjects::checkAlert(QString &id) {
+bool inDetectionObjects::checkAlert(QString &id) {
     bool isAlert = false;
 
     detected &det = detectedContainer[id];
@@ -139,9 +136,7 @@ bool detectedObjects::checkAlert(QString &id) {
  * Removes objects from the hash if they have not been updated within the last 5 seconds.
  * This is used to clean up the hash and remove objects that are no longer being tracked.
  */
-void detectedObjects::removePastObjects() {
-    QTime currentTime = QTime::currentTime();
-
+void inDetectionObjects::removePastObjects(QTime &currentTime) {
     if (!detectedContainer.isEmpty()) {
         const auto keys = detectedContainer.keys();
         for (const QString &key : keys) {

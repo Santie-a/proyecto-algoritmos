@@ -1,10 +1,5 @@
 #include "MainWindow.h"
 
-#include <QImage>
-#include <QDebug>
-#include <QCameraDevice>
-#include <QMediaDevices>
-
 /**
  * Constructor for MainWindow.
  * Initializes the main window with a size of 1000x800.
@@ -18,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     loadDetector(false);
 
-    detectedObjects objects;
+    alerts.loadAlerts("../../data/alerts.json");
 
     setCameras();
 
@@ -52,7 +47,7 @@ void MainWindow::loadDetector(bool pedestrian) {
         usingHog = true;
     }
     else {
-        if (!faceCascade.load("../../cascades/haarcascade_frontalface_default.xml")) { // Make sure to provide the correct path
+        if (!faceCascade.load("../../cascades/haarcascade_frontalface_default.xml")) { // Two orders above build folder
             qDebug() << "Error loading face cascade classifier.";
             return;
         }
@@ -139,6 +134,10 @@ void MainWindow::setCameras() {
     int cameraIndex = 0;
     int row = 0, col = 0;
 
+    alertLevelsAndTimes.resize(cameraCount);
+    alertLevelsAndTimes.fill({0, QTime::currentTime()});
+
+
     for (int i = 0; i < cameraCount; i++) {
         cv::VideoCapture cap(cameraIndex);
 
@@ -147,12 +146,12 @@ void MainWindow::setCameras() {
             break;
         }
 
-        // Create a QLabel to siplay the name in the grid
+        // Create a QLabel to display the name in the grid
         QLabel *cameraNameLabel = new QLabel(this);
         cameraNameLabels.append(cameraNameLabel);
         gridLayout->addWidget(cameraNameLabel, row, col);
 
-        // Create a QLabel to siplay the name in the sidebar
+        // Create a QLabel to display the name in the sidebar
         QLabel *sidebarCameraNameLabel = new QLabel(this);
         sidebarCameraNameLabel->setText(QString("CAMERA %1").arg(i));
         sidebarCameraNameLabel->setStyleSheet("background-color: transparent; font-weight: bold; font-size: 15px; padding: 5px;");
@@ -218,8 +217,10 @@ void MainWindow::displayAlert(int val, int index) {
  * Additionally, it removes objects from the detected objects container that have not been updated recently.
  */
 void MainWindow::updateFrames() {
+    QTime currentTime = QTime::currentTime();
+    QDate currentDate = QDate::currentDate();
+
     for (int i = 0; i < cameras.size(); ++i) {
-        int alertLevel = 0;
         cv::Mat frame;
         if (cameras[i].read(frame) && !frame.empty()) {
 
@@ -238,22 +239,38 @@ void MainWindow::updateFrames() {
 
             // Draw rectangles around detected objects, and manage logic of detected objects
             if (detections.empty()) {
-                alertLevel = 0;
+                alertLevelsAndTimes[i].first = 0;
             } else {
                 for (const auto& detected : detections) {
                     cv::rectangle(frame, detected, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
 
                     std::pair<int, int> position = {detected.x, detected.y};
 
-                    QString currentId = objects.updateObject(i, position);
+                    QString currentId = objects.updateObject(i, position, currentTime);
 
-                    alertLevel = (objects.checkAlert(currentId)) ? 2 : 1;
+                    if (alertLevelsAndTimes[i].second.secsTo(currentTime) > 2) {
+                        if (objects.checkAlert(currentId)) {
+
+                            alertLevelsAndTimes[i].first = 2;
+                            QString imgPath = QString("../../data/img/%1.png").arg(currentId);
+
+                            cv::Mat rgbFrame;
+                            cv::cvtColor(frame, rgbFrame, cv::COLOR_BGR2RGB);
+                            cv::imwrite(imgPath.toStdString(), rgbFrame);
+                            alerts.insertAlerted(currentId, imgPath, currentDate, currentTime, i);
+                            alertLevelsAndTimes[i].second = QTime::currentTime();
+
+                        } else {
+                            alertLevelsAndTimes[i].first = 1;
+                            alertLevelsAndTimes[i].second = QTime::currentTime();
+                        }
+                    }
                 }
             }
 
 
             // Alert
-            displayAlert(alertLevel, i);
+            displayAlert(alertLevelsAndTimes[i].first, i);
 
             // Convert cv::Mat to QImage
             QImage image(
@@ -269,5 +286,18 @@ void MainWindow::updateFrames() {
                 cameraLabels[i]->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     }
-    objects.removePastObjects();
+    objects.removePastObjects(currentTime);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Cerrar aplicación",
+                                                               "¿Estás seguro de que deseas salir?\nSe guardarán los datos automáticamente.",
+                                                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+    if (resBtn == QMessageBox::Yes) {
+        alerts.saveAlerts("../../data/alerts.json");
+        event->accept();
+    } else {
+        event->ignore();
+    }
 }

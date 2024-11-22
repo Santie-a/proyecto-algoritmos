@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindow.h"
-#include "detectedobjects.h"
+#include "indetectionobjects.h"
+#include "alertedobjects.h"
 
 #include <QMainWindow>
 #include <QGridLayout>
@@ -11,6 +12,13 @@
 #include <QQueue>
 #include <QHash>
 #include <QComboBox>
+#include <QImage>
+#include <QDebug>
+#include <QCameraDevice>
+#include <QMediaDevices>
+#include <QDateTime>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 #include <opencv2/opencv.hpp>
 
@@ -40,9 +48,12 @@ private:
     QWidget *headerWidget;
     QWidget *sidebarWidget;
 
-    // class instance to store the objects
-    detectedObjects objects;
-    int alertLevel;
+    // Class instance to store the objects that are being detected
+    inDetectionObjects objects;
+
+    // Class instance to store that have been detected
+    alertedObjects alerts;
+    QList<std::pair<int, QTime>> alertLevelsAndTimes;
 
     // *Camera
     QVector<cv::VideoCapture> cameras;
@@ -70,5 +81,7 @@ private:
     void setCameras();
     void loadDetector(bool pedestrian);
     void displayAlert(int val, int index);
+    void closeEvent(QCloseEvent *event);
+
 };
 #endif // MAINWINDOW_H

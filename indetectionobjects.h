@@ -1,12 +1,12 @@
-#ifndef DETECTEDOBJECTS_H
-#define DETECTEDOBJECTS_H
+#ifndef INDETECTIONDOBJECTS_H
+#define INDETECTIONDOBJECTS_H
 
 #include <QHash>
 #include <QQueue>
 #include <QString>
 #include <QTime>
 
-class detectedObjects
+class inDetectionObjects
 {
 private:
     // Struct for the detected object
@@ -33,17 +33,17 @@ private:
 
     // Private main functions
     void addObject(QString &id, std::pair<int, int> &initialPosition);
-    QString retriveKey(int index, std::pair<int, int> &position);
+    QString retriveKey(int index, std::pair<int, int> &position, QTime &currentTime);
 
     // Private helper functions
     bool isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2);
 
 public:
-    detectedObjects();
+    inDetectionObjects();
 
-    QString updateObject(int index, std::pair<int, int> &position);
-    void removePastObjects();
+    QString updateObject(int index, std::pair<int, int> &position, QTime &currentTime);
+    void removePastObjects(QTime &currentTime);
     bool checkAlert(QString &id);
 };
 
-#endif // DETECTEDOBJECTS_H
+#endif // INDETECTEDOBJECTS_H
