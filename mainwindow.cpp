@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     createUI();
 
-    loadCascade(true);
+    loadDetector(false);
 
     detectedObjects objects;
 
@@ -45,7 +45,7 @@ MainWindow::~MainWindow() {
  * Loads the Haar Cascade classifier for face detection from the provided path.
  * If the load fails, prints an error message to the console.
  */
-void MainWindow::loadCascade(bool pedestrian) {
+void MainWindow::loadDetector(bool pedestrian) {
     // Load the Haar Cascade classifier
     if (pedestrian) {
         pedestrianHOG.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());

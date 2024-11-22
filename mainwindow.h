@@ -68,7 +68,7 @@ private:
     // Funciones organizadoras
     void createUI();
     void setCameras();
-    void loadCascade(bool pedestrian);
+    void loadDetector(bool pedestrian);
     void displayAlert(int val, int index);
 };
 #endif // MAINWINDOW_H
