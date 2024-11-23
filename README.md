@@ -15,7 +15,7 @@ Un sistema en tiempo real para detectar, rastrear y generar alertas basadas en l
 Como el proyecto se encuentra en desarrollo, para construir y ejecutar el proyecto, necesitas:
 
 - **Qt Framework** (versión 6 o posterior)
-- **OpenCV** (versión 4.1 o posterior), compilado para Qt (minGW)
+- **OpenCV** (versión 4.1 o posterior), compilado para Qt (minGW).
 - Un compilador C++ compatible con tu versión de Qt
 
 Asegúrate de que los siguientes módulos de OpenCV estén instalados:
@@ -40,7 +40,7 @@ Asegúrate de que los siguientes módulos de OpenCV estén instalados:
 ### Paso 2: Abrir el Proyecto en Qt Creator
 
 1. Lanza **Qt Creator**.
-2. Abre el archivo `.pro` que se encuentra en el directorio raíz del proyecto.
+2. Abre el archivo `.pro` que se encuentra en el directorio raíz del proyecto. Aqui es necesario cambiar las rutas de las librerias de OpenCV.
 
 ### Paso 3: Configurar la Construcción
 
