@@ -241,13 +241,13 @@ void MainWindow::onSortOptionChanged(int index) {
 
     switch (index) {
     case 0: // "Sort by Camera"
-        sortedList = alerts.getSortedByCamera();
+        sortedList = alerts.getSortedByDate();
         break;
     case 1: // "Sort by Hour"
         sortedList = alerts.getSortedByHour();
         break;
     case 2: // "Sort by Date"
-        sortedList = alerts.getSortedByDate();
+        sortedList = alerts.getSortedByCamera();
         break;
     }
 
