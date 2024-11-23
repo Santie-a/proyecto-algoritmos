@@ -115,3 +115,12 @@ QList<alertedObjects::alerted> alertedObjects::getSortedByDate() {
     });
     return alertList;
 }
+
+alertedObjects::alerted alertedObjects::operator[](QString key) {
+    const alertedObjects::alerted obj = alertedContainer[key];
+    return obj;
+}
+
+bool alertedObjects::contains(QString &key) {
+    return alertedContainer.contains(key);
+}

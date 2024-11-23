@@ -12,7 +12,7 @@
 
 // Class to load and store the alerted objects, with sorter f
 class alertedObjects {
-private:
+public:
     // Struct for storing alert
     struct alerted {
         QString imgPath;
@@ -28,9 +28,6 @@ private:
             : imgPath(_imgPath), date(_date), hour(_hour), camera(_camera) {}
     };
 
-    QMap<QString, alerted> alertedContainer; // Mapa que almacena IDs y sus detecciones
-
-public:
     // Save alerts
     void saveAlerts(QString filename);
 
@@ -44,6 +41,14 @@ public:
     QList<alerted> getSortedByCamera();
     QList<alerted> getSortedByDate();
     QList<alerted> getSortedByHour();
+
+    // Operation functions
+    alerted operator[](QString key);
+    bool contains(QString &key);
+
+private:
+    // Container
+    QMap<QString, alerted> alertedContainer; // Mapa que almacena IDs y sus detecciones
 };
 
 #endif // ALERTEDOBJECTS_H

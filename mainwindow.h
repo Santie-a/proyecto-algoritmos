@@ -19,6 +19,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QListWidget>
 
 #include <opencv2/opencv.hpp>
 
@@ -31,6 +32,9 @@ public:
 
 private slots:
     void updateFrames();
+
+public slots:
+    void onSortOptionChanged(int index);
 
 private:
     // Windows and UI
@@ -46,7 +50,8 @@ private:
     QWidget *mainWidget;
     QWidget *centralWidget;
     QWidget *headerWidget;
-    QWidget *sidebarWidget;
+    QListWidget *sidebarWidget;
+    QListWidget *alertsWidget;
 
     // Class instance to store the objects that are being detected
     inDetectionObjects objects;
@@ -54,6 +59,7 @@ private:
     // Class instance to store that have been detected
     alertedObjects alerts;
     QList<std::pair<int, QTime>> alertLevelsAndTimes;
+    QComboBox *comboBoxSortOptions;
 
     // *Camera
     QVector<cv::VideoCapture> cameras;
@@ -82,6 +88,11 @@ private:
     void loadDetector(bool pedestrian);
     void displayAlert(int val, int index);
     void closeEvent(QCloseEvent *event);
+
+    // Helper fuctions
+    void updateAlertedList(QList<alertedObjects::alerted>);
+    void onItemClicked(QListWidgetItem *item);
+    void displayImage(QString &imgPath);
 
 };
 #endif // MAINWINDOW_H

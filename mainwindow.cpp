@@ -14,6 +14,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     loadDetector(false);
 
     alerts.loadAlerts("../../data/alerts.json");
+    updateAlertedList(alerts.getSortedByDate());
+
+    // Connections for interactivity
+    connect(alertsWidget, &QListWidget::itemDoubleClicked, this, &MainWindow::onItemClicked);
+    connect(comboBoxSortOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(onSortOptionChanged(int)));
 
     setCameras();
 
@@ -67,16 +72,28 @@ void MainWindow::createUI() {
     QHBoxLayout *centralLayout = new QHBoxLayout(centralWidget);
 
     // Sidebar space
-    sidebarWidget = new QWidget(this);
-    sidebarWidget->setMinimumWidth(150);
-    sidebarWidget->setMinimumHeight(400);
-    sidebarWidget->setStyleSheet("background-color: #2E86C1; padding: 3px; margin: 5px; border-radius: 3px;");
+    sidebarWidget = new QListWidget(this);
+    sidebarWidget->setMaximumWidth(250);
+    sidebarWidget->setStyleSheet("background-color: #121212; padding: 3px; margin: 5px;");
     sidebarLayout = new QVBoxLayout(sidebarWidget);
 
     // *Menu title
-    QLabel *menuLabel = new QLabel("Menu", this);
+    QLabel *menuLabel = new QLabel("Registro", this);
     menuLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold; padding: 5px");
     sidebarLayout->addWidget(menuLabel); // Adding the title space to the container
+
+    // *Sorting options
+    comboBoxSortOptions = new QComboBox(this);
+    comboBoxSortOptions->addItem("Fecha");
+    comboBoxSortOptions->addItem("Hora");
+    comboBoxSortOptions->addItem("Cámara");
+    comboBoxSortOptions->setStyleSheet("background-color: #808080");
+
+    sidebarLayout->addWidget(comboBoxSortOptions);
+
+    // *Log space
+    alertsWidget = new QListWidget(this);
+    sidebarLayout->addWidget(alertsWidget);
 
     // Content container
     contentLayout = new QVBoxLayout();
@@ -85,7 +102,7 @@ void MainWindow::createUI() {
 
     // Title creation and styling
     headerWidget = new QWidget(this); // Title container
-    headerWidget->setStyleSheet("background-color: #2E86C1; padding: 10px; margin: 5px; border-radius: 3px;");
+    headerWidget->setStyleSheet("background-color: #121212; padding: 10px; margin: 5px;");
 
     headerLayout = new QVBoxLayout(headerWidget); // Title space
 
@@ -107,6 +124,9 @@ void MainWindow::createUI() {
 
     bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
     contentLayout->addItem(bottomSpacer);
+    sidebarLayout->addItem(bottomSpacer);
+
+    centralLayout->addWidget(sidebarWidget);
 
     setCentralWidget(centralWidget);
     setMinimumSize(1000, 800);
@@ -151,25 +171,12 @@ void MainWindow::setCameras() {
         cameraNameLabels.append(cameraNameLabel);
         gridLayout->addWidget(cameraNameLabel, row, col);
 
-        // Create a QLabel to display the name in the sidebar
-        QLabel *sidebarCameraNameLabel = new QLabel(this);
-        sidebarCameraNameLabel->setText(QString("CAMERA %1").arg(i));
-        sidebarCameraNameLabel->setStyleSheet("background-color: transparent; font-weight: bold; font-size: 15px; padding: 5px;");
-        sidebarLayout->addWidget(sidebarCameraNameLabel);
-
         // Create a QLabel to display the camera feed
         QLabel *cameraLabel = new QLabel(this);
         cameraLabel->setMinimumSize(minWidth, minHeight);
         cameraLabel->setAlignment(Qt::AlignCenter);
         cameraLabels.append(cameraLabel);
         gridLayout->addWidget(cameraLabel, row + 1, col);
-
-        // Create a QComboBox for the camera options
-        QComboBox *cameraOption = new QComboBox(sidebarWidget);
-        cameraOption->addItem("Default detection");
-        cameraOption->addItem("Detection disabled");
-        cameraOption->addItem("Alert On detection");
-        sidebarLayout->addWidget(cameraOption);
 
         // Store the VideoCapture object
         cameras.append(std::move(cap));
@@ -203,6 +210,74 @@ void MainWindow::displayAlert(int val, int index) {
     default:
         cameraNameLabels[index]->setStyleSheet("background-color: transparent; font-weight: bold; font-size: 30px; padding: 5px;");
         break;
+    }
+}
+
+void MainWindow::displayImage(QString &imgPath) {
+    qDebug() << "Trying to display img" << imgPath;
+    QDialog dialog(this);
+    QVBoxLayout layout(&dialog);
+
+    QLabel imageLabel;
+    QPixmap pixmap(imgPath);
+    if (pixmap.isNull()) {
+        imageLabel.setText("Failed to load image.");
+    } else {
+        imageLabel.setPixmap(pixmap.scaled(600, 400, Qt::KeepAspectRatio)); // Escalar imagen
+    }
+
+    layout.addWidget(&imageLabel);
+    dialog.setLayout(&layout);
+    dialog.exec(); // Mostrar la ventana de diálogo
+}
+
+void MainWindow::onSortOptionChanged(int index) {
+    QList<alertedObjects::alerted> sortedList;
+
+    // Según la opción seleccionada, ordenar y actualizar la lista
+    switch (index) {
+    case 0: // "Sort by Camera"
+        sortedList = alerts.getSortedByCamera();
+        break;
+    case 1: // "Sort by Hour"
+        sortedList = alerts.getSortedByHour();
+        break;
+    case 2: // "Sort by Date"
+        sortedList = alerts.getSortedByDate();
+        break;
+    }
+
+    // Llamar a updateAlertedList con la lista ordenada
+    updateAlertedList(sortedList);
+}
+
+void MainWindow::onItemClicked(QListWidgetItem *item) {
+    // Obtener la ruta de la imagen almacenada en los datos del ítem
+    QString imgPath = item->data(Qt::UserRole).toString();
+
+    // Llamar al método displayImage con la ruta de la imagen
+    displayImage(imgPath);
+}
+
+void MainWindow::updateAlertedList(QList<alertedObjects::alerted> alertedList) {
+    // Limpiar la lista actual antes de actualizarla
+    alertsWidget->clear();
+
+    // Iterar sobre la lista de alertas y agregar los elementos al QListWidget
+    for (const alertedObjects::alerted &alert : alertedList) {
+        // Crear una cadena con los detalles de la alerta
+        QString alertInfo = QString("CAM%1 - %2 - %3").arg(alert.camera).arg(alert.date.toString("yyyy-MM-dd"), alert.hour.toString());
+
+        // Crear un nuevo ítem en la lista
+        QListWidgetItem *item = new QListWidgetItem(alertInfo);
+        item->setBackground(QColor(60, 60, 60));
+        item->setForeground(QColor(240, 240, 240));
+
+        // Asociar la ruta de la imagen como dato extra del item (por si la necesitas después)
+        item->setData(Qt::UserRole, alert.imgPath);
+
+        // Agregar el item al QListWidget
+        alertsWidget->addItem(item);
     }
 }
 
@@ -259,6 +334,8 @@ void MainWindow::updateFrames() {
                             cv::imwrite(imgPath.toStdString(), rgbFrame);
                             alerts.insertAlerted(currentId, imgPath, currentDate, currentTime, i);
                             alertLevelsAndTimes[i].second = QTime::currentTime();
+
+                            onSortOptionChanged(comboBoxSortOptions->currentIndex());
 
                         } else {
                             alertLevelsAndTimes[i].first = 1;
