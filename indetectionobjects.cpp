@@ -29,12 +29,11 @@ void inDetectionObjects::addObject(QString &id, std::pair<int, int> &initialPosi
 
 /**
  * Checks if two positions are within a specified tolerance.
- * 
+ *
  * @param p1 The first position as a pair of coordinates (x, y).
  * @param p2 The second position as a pair of coordinates (x, y).
  * @return True if the positions are within the tolerance range, false otherwise.
  */
-
 bool inDetectionObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> &p2) {
     if (
         (p1.first <= p2.first + tolerance) &&
@@ -48,13 +47,16 @@ bool inDetectionObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> 
     }
 }
 
+
 /**
- * Retrieves a key from the hash based on the provided index and position.
- * If an existing object is found that is within the tolerance range, its key is returned.
- * Otherwise, a new key is generated in the format "CAM<index>-<hour>-<minute>-<second>" and returned.
+ * Retrieves the key for the object at the specified position and time.
+ * If the detectedContainer is empty or no close match is found, a new
+ * key is generated based on the current time and camera index.
+ *
  * @param index The index of the camera.
  * @param position The position of the object as a pair of coordinates (x, y).
- * @return The key for the object.
+ * @param currentTime The current time used for generating a new key if needed.
+ * @return The key for the object, either an existing one or a new one.
  */
 QString inDetectionObjects::retriveKey(int index, std::pair<int, int> &position, QTime &currentTime) {
     QString id;
@@ -88,6 +90,7 @@ QString inDetectionObjects::retriveKey(int index, std::pair<int, int> &position,
  * Updates the object at the specified index with the new position. If the object does not exist, creates a new one.
  * @param index The index of the camera.
  * @param position The new position of the object as a pair of coordinates (x, y).
+ * @param currentTime The current time used for adding new positions to the queue.
  * @return The key for the object.
  */
 QString inDetectionObjects::updateObject(int index, std::pair<int, int> &position, QTime &currentTime) {
@@ -135,6 +138,7 @@ bool inDetectionObjects::checkAlert(QString &id) {
 /**
  * Removes objects from the hash if they have not been updated within the last 5 seconds.
  * This is used to clean up the hash and remove objects that are no longer being tracked.
+ * @param currentTime The current time used for determining the age of objects.
  */
 void inDetectionObjects::removePastObjects(QTime &currentTime) {
     if (!detectedContainer.isEmpty()) {

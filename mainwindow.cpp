@@ -42,7 +42,7 @@ MainWindow::~MainWindow() {
 }
 
 /**
- * Loads the Haar Cascade classifier for face detection from the provided path.
+ * Loads the Haar Cascade and SVM classifier for face detection or pedestrian detection from the provided path.
  * If the load fails, prints an error message to the console.
  */
 void MainWindow::loadDetector(bool pedestrian) {
@@ -231,10 +231,14 @@ void MainWindow::displayImage(QString &imgPath) {
     dialog.exec(); // Mostrar la ventana de diálogo
 }
 
+/**
+ * Slot connected to the combo box that changes the sorting order of the alerts list.
+ * @param index The index of the selected item in the combo box, which corresponds to the sorting order.
+ */
 void MainWindow::onSortOptionChanged(int index) {
     QList<alertedObjects::alerted> sortedList;
 
-    // Según la opción seleccionada, ordenar y actualizar la lista
+
     switch (index) {
     case 0: // "Sort by Camera"
         sortedList = alerts.getSortedByCamera();
@@ -251,6 +255,11 @@ void MainWindow::onSortOptionChanged(int index) {
     updateAlertedList(sortedList);
 }
 
+/**
+ * Slot triggered when an item in the alerts list is clicked.
+ * Displays an image dialog with the image corresponding to the clicked item.
+ * @param item The item that was clicked.
+ */
 void MainWindow::onItemClicked(QListWidgetItem *item) {
     // Obtener la ruta de la imagen almacenada en los datos del ítem
     QString imgPath = item->data(Qt::UserRole).toString();
@@ -259,6 +268,16 @@ void MainWindow::onItemClicked(QListWidgetItem *item) {
     displayImage(imgPath);
 }
 
+/**
+ * Updates the alerts list widget with the given list of alerts.
+ * 
+ * This function clears the current list and then iterates over the given list of alerts,
+ * adding each alert as a new item in the list. The item's text is set to a string containing
+ * the camera number, date, and time of the alert. The item's background and foreground colors
+ * are set to a dark gray and light gray, respectively. The item's data is set to the path of
+ * the image associated with the alert, which can be accessed later if needed.
+ * @param alertedList The list of alerts to display in the list widget
+ */
 void MainWindow::updateAlertedList(QList<alertedObjects::alerted> alertedList) {
     // Limpiar la lista actual antes de actualizarla
     alertsWidget->clear();
@@ -281,15 +300,16 @@ void MainWindow::updateAlertedList(QList<alertedObjects::alerted> alertedList) {
     }
 }
 
+
 /**
- * Updates the frames for each camera, performing face detection and alert checks.
- * 
- * This function iterates over all available cameras, reads frames, and processes them for face detection.
- * Detected faces are marked with red rectangles. The function checks for alert conditions based on the
- * detected object positions and updates the camera label styles accordingly. It converts the processed
- * frames from cv::Mat to QImage format and displays them on the respective QLabel widgets.
- * 
- * Additionally, it removes objects from the detected objects container that have not been updated recently.
+ * Updates the frames of all cameras and performs object detection.
+ * If an object is detected, it will draw a red rectangle around it and
+ * update the alert level and time if the object is not already being tracked.
+ * If the object has been detected for more than 2 seconds, it will save an image
+ * to the data/img directory and add the alert to the alerts list.
+ * It will then update the alert list widget with the new alert.
+ * Finally, it will call the removePastObjects function to clean up the hash of detected objects.
+ * @see inDetectionObjects::removePastObjects
  */
 void MainWindow::updateFrames() {
     QTime currentTime = QTime::currentTime();
