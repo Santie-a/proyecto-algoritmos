@@ -15,7 +15,7 @@ Un sistema en tiempo real para detectar, rastrear y generar alertas basadas en l
 Como el proyecto se encuentra en desarrollo, para construir y ejecutar el proyecto, necesitas:
 
 - **Qt Framework** (versión 6 o posterior)
-- **OpenCV** (versión 4.1 o posterior)
+- **OpenCV** (versión 4.1 o posterior), compilado para Qt (minGW)
 - Un compilador C++ compatible con tu versión de Qt
 
 Asegúrate de que los siguientes módulos de OpenCV estén instalados:
