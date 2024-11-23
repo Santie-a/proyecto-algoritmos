@@ -61,9 +61,11 @@ bool inDetectionObjects::isCloseTo(std::pair<int, int> &p1, std::pair<int, int> 
 QString inDetectionObjects::retriveKey(int index, std::pair<int, int> &position, QTime &currentTime) {
     QString id;
 
+    // Check if the detectedContainer is empty to create a new key
     if (detectedContainer.isEmpty()) {
         id = QString("CAM%1-%2-%3-%4").arg(index).arg(currentTime.hour()).arg(currentTime.minute()).arg(currentTime.second());
     } else {
+        // Check if the detectedContainer contains a close match, doing so by checking the head of the positions queue
         const auto keys = detectedContainer.keys();
         for (const QString &key : keys) {
             detected &det = detectedContainer[key];
@@ -79,6 +81,7 @@ QString inDetectionObjects::retriveKey(int index, std::pair<int, int> &position,
         }
     }
 
+    // If no close match is found, create a new key (default)
     if (id == "") {
         id = QString("CAM%1-%2-%3-%4").arg(index).arg(currentTime.hour()).arg(currentTime.minute()).arg(currentTime.second());
     }
@@ -96,12 +99,15 @@ QString inDetectionObjects::retriveKey(int index, std::pair<int, int> &position,
 QString inDetectionObjects::updateObject(int index, std::pair<int, int> &position, QTime &currentTime) {
     QString id = retriveKey(index, position, currentTime);
 
+    // If the detectedContainer is empty, add the object
     if (detectedContainer.isEmpty()) {
         addObject(id, position);
     } else {
+        // If the container does not contain the object, add it
         if (!detectedContainer.contains(id)) {
             addObject(id, position);
         } else {
+            // Otherwise, update the object
             detected &det = detectedContainer[id];
             if (det.positions && (det.startingTime.secsTo(currentTime) > 1)) {
                 det.positions->enqueue(position);
@@ -126,7 +132,7 @@ bool inDetectionObjects::checkAlert(QString &id) {
 
     detected &det = detectedContainer[id];
 
-    int difference = det.startingTime.secsTo(det.lastInsertionTime);
+    int difference = det.startingTime.secsTo(det.lastInsertionTime); // Time from starting to last insertion
 
     if (difference > 10) {
         isAlert = true;

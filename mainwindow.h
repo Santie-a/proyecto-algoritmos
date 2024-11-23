@@ -82,7 +82,7 @@ private:
     cv::HOGDescriptor pedestrianHOG;
     bool usingHog = false;
 
-    // Funciones organizadoras
+    // Organization functions
     void createUI();
     void setCameras();
     void loadDetector(bool pedestrian);

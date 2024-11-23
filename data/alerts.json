@@ -1,6 +1,27 @@
 [
     {
         "camera": 0,
+        "date": "2024-11-23",
+        "hour": "11:15:02",
+        "id": "CAM0-11-14-40",
+        "imgPath": "../../data/img/CAM0-11-14-40.png"
+    },
+    {
+        "camera": 1,
+        "date": "2024-11-23",
+        "hour": "11:28:00",
+        "id": "CAM0-11-27-41",
+        "imgPath": "../../data/img/CAM0-11-27-41.png"
+    },
+    {
+        "camera": 0,
+        "date": "2024-11-23",
+        "hour": "11:28:50",
+        "id": "CAM0-11-28-35",
+        "imgPath": "../../data/img/CAM0-11-28-35.png"
+    },
+    {
+        "camera": 0,
         "date": "2024-11-22",
         "hour": "21:38:51",
         "id": "CAM0-21-38-38",
@@ -19,6 +40,13 @@
         "hour": "21:09:35",
         "id": "CAM0-21-9-21",
         "imgPath": "../../data/img/CAM0-21-9-21.png"
+    },
+    {
+        "camera": 1,
+        "date": "2024-11-23",
+        "hour": "11:52:45",
+        "id": "CAM1-11-52-34",
+        "imgPath": "../../data/img/CAM1-11-52-34.png"
     },
     {
         "camera": 1,

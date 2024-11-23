@@ -46,7 +46,7 @@ MainWindow::~MainWindow() {
  * If the load fails, prints an error message to the console.
  */
 void MainWindow::loadDetector(bool pedestrian) {
-    // Load the Haar Cascade classifier
+    // Load the Haar Cascade classifier or the SVM classifier
     if (pedestrian) {
         pedestrianHOG.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
         usingHog = true;
@@ -223,12 +223,12 @@ void MainWindow::displayImage(QString &imgPath) {
     if (pixmap.isNull()) {
         imageLabel.setText("Failed to load image.");
     } else {
-        imageLabel.setPixmap(pixmap.scaled(600, 400, Qt::KeepAspectRatio)); // Escalar imagen
+        imageLabel.setPixmap(pixmap.scaled(600, 400, Qt::KeepAspectRatio)); // Scale the image
     }
 
     layout.addWidget(&imageLabel);
     dialog.setLayout(&layout);
-    dialog.exec(); // Mostrar la ventana de diálogo
+    dialog.exec(); // Show the dialog
 }
 
 /**
@@ -251,7 +251,7 @@ void MainWindow::onSortOptionChanged(int index) {
         break;
     }
 
-    // Llamar a updateAlertedList con la lista ordenada
+    // Call the updateAlertedList function with the sorted list
     updateAlertedList(sortedList);
 }
 
@@ -261,10 +261,10 @@ void MainWindow::onSortOptionChanged(int index) {
  * @param item The item that was clicked.
  */
 void MainWindow::onItemClicked(QListWidgetItem *item) {
-    // Obtener la ruta de la imagen almacenada en los datos del ítem
+    // Get the path of the image associated with the clicked item
     QString imgPath = item->data(Qt::UserRole).toString();
 
-    // Llamar al método displayImage con la ruta de la imagen
+    // Call the displayImage function to display the image
     displayImage(imgPath);
 }
 
@@ -279,23 +279,23 @@ void MainWindow::onItemClicked(QListWidgetItem *item) {
  * @param alertedList The list of alerts to display in the list widget
  */
 void MainWindow::updateAlertedList(QList<alertedObjects::alerted> alertedList) {
-    // Limpiar la lista actual antes de actualizarla
+    // Clear the current list
     alertsWidget->clear();
 
-    // Iterar sobre la lista de alertas y agregar los elementos al QListWidget
+    // Iterate over the list of alerts
     for (const alertedObjects::alerted &alert : alertedList) {
-        // Crear una cadena con los detalles de la alerta
+        // Create a formatted string with the camera number, date, and time
         QString alertInfo = QString("CAM%1 - %2 - %3").arg(alert.camera).arg(alert.date.toString("yyyy-MM-dd"), alert.hour.toString());
 
-        // Crear un nuevo ítem en la lista
+        // Create a new QListWidgetItem with the formatted string
         QListWidgetItem *item = new QListWidgetItem(alertInfo);
         item->setBackground(QColor(60, 60, 60));
         item->setForeground(QColor(240, 240, 240));
 
-        // Asociar la ruta de la imagen como dato extra del item (por si la necesitas después)
+        // Set the user role of the item to the path of the image associated with the alert
         item->setData(Qt::UserRole, alert.imgPath);
 
-        // Agregar el item al QListWidget
+        // Add the item to the list
         alertsWidget->addItem(item);
     }
 }
@@ -339,25 +339,32 @@ void MainWindow::updateFrames() {
                 for (const auto& detected : detections) {
                     cv::rectangle(frame, detected, cv::Scalar(255, 0, 0), 2); // Draw a red rectangle
 
-                    std::pair<int, int> position = {detected.x, detected.y};
+                    std::pair<int, int> position = {detected.x, detected.y}; // Position of the object
 
-                    QString currentId = objects.updateObject(i, position, currentTime);
+                    QString currentId = objects.updateObject(i, position, currentTime); // Update the object (class inDetectionObjects)
 
+                    // Check if the object has been detected for more than 2 seconds
                     if (alertLevelsAndTimes[i].second.secsTo(currentTime) > 2) {
+                        // Check if the object is already being tracked (class inDetectionObjects)
                         if (objects.checkAlert(currentId)) {
 
-                            alertLevelsAndTimes[i].first = 2;
+                            alertLevelsAndTimes[i].first = 2; // Set the alert level to 2
                             QString imgPath = QString("../../data/img/%1.png").arg(currentId);
 
+                            // Save the image
                             cv::Mat rgbFrame;
                             cv::cvtColor(frame, rgbFrame, cv::COLOR_BGR2RGB);
                             cv::imwrite(imgPath.toStdString(), rgbFrame);
+
+                            // Add the alert (class alertedObjects)
                             alerts.insertAlerted(currentId, imgPath, currentDate, currentTime, i);
                             alertLevelsAndTimes[i].second = QTime::currentTime();
 
+                            // Update the alert list widget with the current sorting method
                             onSortOptionChanged(comboBoxSortOptions->currentIndex());
 
                         } else {
+                            // Otherwise, set the alert level to 1 (no alert, only detection)
                             alertLevelsAndTimes[i].first = 1;
                             alertLevelsAndTimes[i].second = QTime::currentTime();
                         }
@@ -387,10 +394,12 @@ void MainWindow::updateFrames() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    // Show a confirmation dialog when the user tries to close the application
     QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Cerrar aplicación",
                                                                "¿Estás seguro de que deseas salir?\nSe guardarán los datos automáticamente.",
                                                                QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
+    // If the user clicks "Yes", save the alerts and accept the close event
     if (resBtn == QMessageBox::Yes) {
         alerts.saveAlerts("../../data/alerts.json");
         event->accept();
