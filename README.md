@@ -51,3 +51,6 @@ Asegúrate de que los siguientes módulos de OpenCV estén instalados:
 
 1. Haz clic en **Build All** para construir el proyecto.
 2. Una vez construido, haz clic en **Run** para ejecutar el proyecto.
+
+## License
+This project uses the open-source version of Qt, which is licensed under the [GNU Lesser General Public License (LGPL) version 3](https://www.gnu.org/licenses/lgpl-3.0.html). 
